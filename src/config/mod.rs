@@ -1,10 +1,10 @@
 use color_eyre::Result;
 use dotenv::dotenv;
-use std::env;
+// use std::env;
 use eyre::WrapErr;
 use serde::Deserialize;
-use tracing::{info, debug};
-use tracing_subscriber::EnvFilter;
+// use tracing::{info, debug};
+// use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
@@ -18,22 +18,22 @@ pub struct Config {
     // pub schema_file: String,
 }
 
-fn init_tracer() {
-    #[cfg(debug_assertions)]
-    let tracer = tracing_subscriber::fmt();
-    #[cfg(not(debug_assertions))]
-    let tracer = tracing_subscriber::fmt().json();
+// fn init_tracer() {
+//     #[cfg(debug_assertions)]
+//     let tracer = tracing_subscriber::fmt();
+//     #[cfg(not(debug_assertions))]
+//     let tracer = tracing_subscriber::fmt().json();
 
-    tracer.with_env_filter(EnvFilter::from_default_env()).init();
-}
+//     tracer.with_env_filter(EnvFilter::from_default_env()).init();
+// }
 
 impl Config {
 
     pub fn from_env() -> Result<Config>{
         dotenv().ok();
-        init_tracer();
+        // init_tracer();
 
-        info!("Loading configuration");
+        // info!("Loading configuration");
 
         let mut c = config::Config::new();
 
@@ -42,7 +42,7 @@ impl Config {
         let config = c.try_into()
             .context("loading configuration from environment");
 
-        debug!("Config: {:?}", config);
+        // debug!("Config: {:?}", config);
         config
     }
 }

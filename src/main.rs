@@ -5,41 +5,41 @@ extern crate serde_json;
 extern crate num_cpus;
 
 use crate::config::Config;
+use tracing::debug;
 // use crate::data::model::get_id_from_url;
 // use crate::data::rest_api::TraversalNodeRequest;
 // use crate::db::scylladb::ScyllaDbService;
 // use crate::s3::s3::read_file;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::middleware::Logger;
-use actix_web::web::Json;
-use actix_web::{get, post, web, web::Data, App, Error, HttpResponse, HttpServer};
+// use actix_web::web::Json;
+use actix_web::{get, post, web, web:: Data, App, Error, HttpResponse, HttpServer};
 use color_eyre::Result;
 // use data::model::{Node, Relation, TraversalNode};
 // use data::rest_api::{GetNodeRequest, IngestionRequest};
 // use data::source_model::{Relation as SourceRelation, Nodes};
 // use db::model::DbNode;
-use futures::future::{BoxFuture, FutureExt};
+// use futures::future::{BoxFuture, FutureExt};
 use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::Instant;
-use tokio::sync::{AcquireError, OwnedSemaphorePermit, Semaphore};
-use tokio::task;
-use tokio::task::JoinHandle;
-use tracing::{debug, error, info};
-use uuid::Uuid;
+// use std::sync::Arc;
+// use std::time::Instant;
+// use tokio::sync::{AcquireError, OwnedSemaphorePermit, Semaphore};
+// use tokio::task;
+// use tokio::task::JoinHandle;
+// use tracing::{debug, error, info};
+// use uuid::Uuid;
 use serde::{Deserialize, Serialize};
+// use std::string::ToString;
+// use strum_macros::Display;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct AppState {
+    // db_svc: ScyllaDbService,
+    // semaphore: Arc<Semaphore>,
+    // region: String,
+    company_name: String,
+}
 
-use std::string::ToString;
-use strum_macros::Display;
-
-
-
-// struct AppState {
-//     db_svc: ScyllaDbService,
-//     semaphore: Arc<Semaphore>,
-//     region: String
-// }
 #[derive(Debug, Serialize, Deserialize)]
 struct MyObj {
     transaction_id : uuid::Uuid,
@@ -49,10 +49,23 @@ struct MyObj {
     properties : HashMap<String,String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct ComRes{
+    payload: MyObj,
+    state: Data<AppState>,
+}
+
 // This handler uses json extractor
-async fn ingest(item: web::Json<MyObj>) -> HttpResponse {
+async fn ingest(item: web::Json<MyObj>, state: Data<AppState>) -> HttpResponse {
     // println!("model: {:?}", &item);
-    HttpResponse::Ok().json(item.0) // <- send response
+    // debug!("Config: {:?}", state);
+    // let state = state.AppState
+    let resp = ComRes{
+        payload:item.0,
+        state:state,
+    };
+    HttpResponse::Ok().json(resp)
+    // HttpResponse::Ok().json(item) // <- send response
 }
 
 // #[post("/ingest")]
@@ -115,17 +128,19 @@ async fn main() -> Result<()> {
     //     db_parallelism, config.schema_file).await;
 
     // let sem = Arc::new(Semaphore::new(parallel_files));
-    // let data = Data::new(AppState {
-    //     db_svc: db,
-    //     semaphore: sem,
-    //     region
-    // });
 
     // info!("Starting server at http://{}:{}/", host, port);
-    HttpServer::new(move || {
+
+    // let state = AppState{
+    //     company_name : String::from("Finbox_Billing"),
+    // };
+
+    HttpServer::new( move || {
         App::new()
-            .wrap(Logger::default())
-            // .app_data(data.clone())
+            // .wrap(Logger::default())
+            .app_data(web::Data::new(AppState{
+                company_name : String::from("FinboxBilling")
+            }))
             .service(web::resource("/").route(web::post().to(ingest)))
             // .service(get_by_id)
             // .service(traversal_by_id)
