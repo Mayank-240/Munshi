@@ -2,10 +2,10 @@ mod config;
 mod data;
 
 extern crate serde_json;
-extern crate num_cpus;
+// extern crate num_cpus;
 
 use crate::config::Config;
-use tracing::debug;
+// use tracing::debug;
 // use crate::data::model::get_id_from_url;
 // use crate::data::rest_api::TraversalNodeRequest;
 // use crate::db::scylladb::ScyllaDbService;
@@ -52,17 +52,18 @@ struct MyObj {
 #[derive(Debug, Serialize, Deserialize)]
 struct ComRes{
     payload: MyObj,
-    state: Data<AppState>,
+    company_name: String,
 }
 
 // This handler uses json extractor
+#[post("/")]
 async fn ingest(item: web::Json<MyObj>, state: Data<AppState>) -> HttpResponse {
     // println!("model: {:?}", &item);
     // debug!("Config: {:?}", state);
     // let state = state.AppState
     let resp = ComRes{
         payload:item.0,
-        state:state,
+        company_name:state.company_name.clone(),
     };
     HttpResponse::Ok().json(resp)
     // HttpResponse::Ok().json(item) // <- send response
@@ -139,9 +140,10 @@ async fn main() -> Result<()> {
         App::new()
             // .wrap(Logger::default())
             .app_data(web::Data::new(AppState{
-                company_name : String::from("FinboxBilling")
+                company_name : String::from("Finbox_Billing")
             }))
-            .service(web::resource("/").route(web::post().to(ingest)))
+            // .service(web::resource("/").route(web::post().to(ingest)))
+            .service(ingest)
             // .service(get_by_id)
             // .service(traversal_by_id)
     })
