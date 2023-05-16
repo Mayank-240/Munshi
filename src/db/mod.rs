@@ -1,2 +1,1 @@
-// pub mod scylladb;
-// pub mod model;
+pub mod scylladb;
