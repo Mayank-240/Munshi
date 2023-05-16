@@ -1,34 +1,25 @@
 mod config;
+mod payload;
 mod db;
 
 use crate::config::Config;
 use crate::db::scylladb::ScyllaDbService;
+use crate::payload::payload::Payload;
 
 use scylla::Session;
 use actix_web::{post, web, web::Data, App, HttpResponse, HttpServer};
 use color_eyre::Result;
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 
 struct AppState {
     session: Session,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct MyObj {
-    transaction_id : uuid::Uuid,
-    subscription_id : uuid::Uuid,
-    client_id : uuid::Uuid,
-    time_stamp: String,
-    properties : HashMap<String,String>,
-}
-
 #[post("/")]
-async fn ingest(item: web::Json<MyObj>, state: Data<AppState>) -> HttpResponse {
+async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> HttpResponse {
     
     let session = &state.session;
     
-    let my_obj: MyObj = item.0;
+    let my_obj: Payload = item.0;
     let my_obj2 = my_obj.clone();
 
     session
