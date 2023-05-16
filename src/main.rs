@@ -10,7 +10,6 @@ use color_eyre::Result;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-
 struct AppState {
     session: Session,
 }
@@ -23,7 +22,6 @@ struct MyObj {
     time_stamp: String,
     properties : HashMap<String,String>,
 }
-
 
 #[post("/")]
 async fn ingest(item: web::Json<MyObj>, state: Data<AppState>) -> HttpResponse {
@@ -42,7 +40,6 @@ async fn ingest(item: web::Json<MyObj>, state: Data<AppState>) -> HttpResponse {
     
     HttpResponse::Ok().json(my_obj2) 
 }
-
 
 #[actix_web::main]
 async fn main() -> Result<()> {

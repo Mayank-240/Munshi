@@ -18,7 +18,7 @@ impl Config {
 
         let mut c = config::Config::new();
 
-        c.merge(config::Environment::default());
+        c.merge(config::Environment::default())?;
 
         let config = c.try_into()
             .context("loading configuration from environment");
