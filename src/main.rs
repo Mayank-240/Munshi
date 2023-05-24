@@ -7,7 +7,7 @@ use crate::db::scylladb::ScyllaDbService;
 use crate::payload::payload::Payload;
 
 use scylla::Session;
-use actix_web::{post, web, web::Data, App, HttpResponse, HttpServer};
+use actix_web::{post, web, web::Data, App, Error, HttpResponse, HttpServer};
 use color_eyre::Result;
 
 struct AppState {
@@ -15,22 +15,22 @@ struct AppState {
 }
 
 #[post("/")]
-async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> HttpResponse {
+async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> Result<HttpResponse, Error> {
     
     let session = &state.session;
     
     let my_obj: Payload = item.0;
-    let my_obj2 = my_obj.clone();
-
+    let epoch_time = my_obj.time_stamp.clone();
     session
         .query(
-            "INSERT INTO my_keyspace.user (transaction_id, subscription_id, client_id, time_stamp, properties) VALUES (?, ?, ?, ?, ?)",
-            (my_obj.transaction_id, my_obj.subscription_id, my_obj.client_id, my_obj.time_stamp, my_obj.properties),
+            "INSERT INTO my_keyspace.user (transaction_id, subscription_id, client_id, time_stamp_epoch, time_stamp, created_at, updated_at, properties) VALUES (?, ?, ?, ?, ?, dateof(now()), dateof(now()), ?)",
+            (my_obj.transaction_id, my_obj.subscription_id, my_obj.client_id, my_obj.time_stamp, epoch_time.clone(), my_obj.properties),
         )
         .await.expect("Entry into Database not successful.");
     
-    HttpResponse::Ok().json(my_obj2) 
+    Ok(HttpResponse::Ok().into()) 
 }
+
 
 #[actix_web::main]
 async fn main() -> Result<()> {
