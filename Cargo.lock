@@ -474,6 +474,7 @@ dependencies = [
  "eyre",
  "scylla",
  "serde 1.0.162",
+ "serde_json",
  "uuid",
  "validator",
 ]
