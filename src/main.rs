@@ -3,7 +3,7 @@ mod payload;
 mod db;
 mod api;
 
-use crate::api::api::{ingest,create_client,create_subscription};
+use crate::api::api::{ingest, create_client, create_subscription};
 use crate::config::Config;
 use crate::db::scylladb::ScyllaDbService;
 
