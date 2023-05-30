@@ -2,6 +2,7 @@ use crate::payload::payload::{Payload, Client, Subscription};
 use crate::db::error::Error;
 use crate::AppState;
 
+
 use scylla::IntoTypedRows;
 use actix_web::{post, web, web::Data, HttpResponse,};
 use color_eyre::Result;
@@ -27,7 +28,6 @@ async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> Result<HttpR
                             },
         Err(_x) => return Ok(HttpResponse::BadRequest().json("querry error"))
     }
-
 
     let query_result = session.query(
                 "INSERT INTO my_keyspace.events (transaction_id, subscription_id, 

@@ -4,7 +4,7 @@ mod db;
 mod api;
 
 use crate::api::api::{ingest, create_client, create_subscription};
-use crate::config::Config;
+use crate::config::AppConfig;
 use crate::db::scylladb::ScyllaDbService;
 
 use scylla::Session;
@@ -19,7 +19,7 @@ pub struct AppState {
 #[actix_web::main]
 async fn main() -> Result<()> {
     
-    let config = Config::from_env().expect("Server Configuration");
+    let config = AppConfig::from_env();
     let port = config.port;
     let host = config.host;
 
