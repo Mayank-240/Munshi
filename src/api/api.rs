@@ -107,7 +107,7 @@ async fn create_subscription(item: web::Json<Subscription>, state: Data<AppState
     match query_client{
         Ok(v) => if v.rows_num().unwrap() == 0{
                                 return Err(Error {
-                                    msg: "Clientt does not exists".to_string(),
+                                    msg: "Client does not exists".to_string(),
                                     status: 400,
                                 })
                             },
