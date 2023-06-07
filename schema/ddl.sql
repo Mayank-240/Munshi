@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS my_keyspace.clients (
     time_stamp BIGINT,
 );
 CREATE TABLE IF NOT EXISTS my_keyspace.subscriptions (
-    subscription_id UUID PRIMARY KEY,
+    subscription_id UUID,
     client_id UUID,
     time_stamp BIGINT,
+    PRIMARY KEY (subscription_id, client_id),
 );

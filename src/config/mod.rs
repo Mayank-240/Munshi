@@ -11,7 +11,7 @@ pub struct AppConfig {
 
 impl AppConfig {
 
-    pub fn from_env() -> AppConfig{
+    pub fn from_env() -> Result<AppConfig, config::ConfigError>{
         dotenv().ok();
 
         let c = config::Config::builder()
@@ -19,7 +19,7 @@ impl AppConfig {
                     .build()
                     .expect("Environment variables error");
 
-        let config: AppConfig = c.try_deserialize().expect("error creating Config");
+        let config = c.try_deserialize();
 
         config
     }

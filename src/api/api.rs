@@ -13,8 +13,41 @@ async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> Result<HttpR
     
     let session = &state.session;
     
-    let my_obj: Payload = item.0;
+    let obj: Payload = item.0;
+    let mut my_obj = obj.clone();
+
+    let query_client = session.query(
+        "SELECT * from my_keyspace.clients where client_id = ?",
+        (my_obj.client_id,)).await;
+
+    match query_client{
+        Ok(v) => if v.rows_num().unwrap() == 0{
+                                return Err(Error {
+                                    msg: "Client does not exists".to_string(),
+                                    status: 400,
+                                })
+                            },
+        Err(_x) => return Ok(HttpResponse::BadRequest().json("querry_client error"))
+    }
+
+    my_obj = obj.clone();
+
+    let query_subscription = session.query(
+        "SELECT * from my_keyspace.subscriptions where subscription_id = ? and client_id = ?",
+        (my_obj.subscription_id, my_obj.client_id,)).await;
+
+    match query_subscription{
+        Ok(v) => if v.rows_num().unwrap() == 0{
+                                return Err(Error {
+                                    msg: "Subscription does not exists for the client".to_string(),
+                                    status: 400,
+                                })
+                            },
+        Err(_x) => return Ok(HttpResponse::BadRequest().json("querry_subscription error"))
+    }
     
+    my_obj = obj.clone();
+
     let query_result = session.query(
         "SELECT * from my_keyspace.events where transaction_id = ? and client_id = ? and time_stamp_epoch = ?",
         (my_obj.transaction_id, my_obj.client_id, my_obj.time_stamp)).await;
@@ -26,7 +59,7 @@ async fn ingest(item: web::Json<Payload>, state: Data<AppState>) -> Result<HttpR
                                     status: 400,
                                 });
                             },
-        Err(_x) => return Ok(HttpResponse::BadRequest().json("querry error"))
+        Err(_x) => return Ok(HttpResponse::BadRequest().json("querry_result error"))
     }
 
     let query_result = session.query(

@@ -7,6 +7,7 @@ use crate::api::api::{ingest, create_client, create_subscription};
 use crate::config::AppConfig;
 use crate::db::scylladb::ScyllaDbService;
 
+use actix_web::{web, HttpResponse, error};
 use scylla::Session;
 use actix_web::{web::Data, App, HttpServer};
 use color_eyre::Result;
@@ -19,7 +20,7 @@ pub struct AppState {
 #[actix_web::main]
 async fn main() -> Result<()> {
     
-    let config = AppConfig::from_env();
+    let config = AppConfig::from_env().expect("error config creation");
     let port = config.port;
     let host = config.host;
 
@@ -36,6 +37,15 @@ async fn main() -> Result<()> {
             .service(ingest)
             .service(create_client)
             .service(create_subscription)
+            .app_data(web::JsonConfig::default().error_handler(|err, _req| {
+                error::InternalError::from_response(
+                    "",
+                    HttpResponse::BadRequest()
+                        .content_type("application/json")
+                        .body(format!(r#"{{"error":"{}"}}"#, err)),
+                )
+                .into()
+            }))
     })
     .bind(format!("{}:{}", host, port))?
     .run()
